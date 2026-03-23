@@ -51,11 +51,11 @@ EXPORTS
     pTimestampType DATA
     pHeadingType DATA
 
-    ; MQ main interface accessor — exact mangled name from llvm-nm
-    ?GetMainInterface@mq@@YAPEAVMainInterface@1@XZ
+    ; MQ main interface accessor — x86 mangled name from llvm-nm
+    ?GetMainInterface@mq@@YAPAVMainInterface@1@XZ
 
-    ; MQ2Type lifecycle — exact mangled names from llvm-nm on compiled objects
-    ??0MQ2Type@datatypes@mq@@QEAA@V?$basic_string_view@DU?$char_traits@D@std@@@std@@AEBUMQPluginHandle@2@@Z
-    ??1MQ2Type@datatypes@mq@@UEAA@XZ
-    ?AddMember@MQ2Type@datatypes@mq@@IEAA_NHPEBD@Z
-    ?FindMember@MQ2Type@datatypes@mq@@QEAAPEAUMQTypeMember@3@PEBD@Z
+    ; MQ2Type lifecycle — x86 mangled names from llvm-nm on compiled objects
+    ??0MQ2Type@datatypes@mq@@QAE@V?$basic_string_view@DU?$char_traits@D@std@@@std@@ABUMQPluginHandle@2@@Z
+    ??1MQ2Type@datatypes@mq@@UAE@XZ
+    ?AddMember@MQ2Type@datatypes@mq@@IAE_NHPBD@Z
+    ?FindMember@MQ2Type@datatypes@mq@@QAEPAUMQTypeMember@3@PBD@Z

@@ -42,6 +42,7 @@ include_directories(SYSTEM
     "${_XWIN_SDK_VER_DIR}/ucrt"
     "${_XWIN_SDK_VER_DIR}/um"
     "${_XWIN_SDK_VER_DIR}/shared"
+    "${XWIN_DIR}/sdk/include/winrt"
 )
 
 # ── Windows SDK / CRT libs via xwin ───────────────────────────────────────────

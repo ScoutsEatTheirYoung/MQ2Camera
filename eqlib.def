@@ -8,6 +8,8 @@ EXPORTS
     pLocalPlayer DATA
     pCharSpawn DATA
 
-    ; CXStr — exact mangled names from llvm-nm on compiled objects
-    ??0CXStr@eqlib@@QEAA@AEBV01@@Z
-    ?FreeRep@CXStr@eqlib@@AEAAXPEAUCStrRep@2@@Z
+    ; CXStr + VeBaseReferenceCount — x86 mangled names from llvm-nm on compiled objects
+    ??0CXStr@eqlib@@QAE@ABV01@@Z
+    ?FreeRep@CXStr@eqlib@@AAEXPAUCStrRep@2@@Z
+    ?DecrementRefCount@VeBaseReferenceCount@eqlib@@QAEXXZ
+    ?IncrementRefCount@VeBaseReferenceCount@eqlib@@QAEXXZ

@@ -106,7 +106,8 @@ target_link_libraries(MQ2Camera PRIVATE
     "${STUB_LIBS_DIR}/MQ2Main.lib"
     "${STUB_LIBS_DIR}/eqlib.lib"
     "${STUB_LIBS_DIR}/detours.lib"    # empty stub (not used at runtime)
-    "${STUB_LIBS_DIR}/imgui-64.lib"   # empty stub (ImGui lives in MQ2Main.dll)
+    "${STUB_LIBS_DIR}/imgui-64.lib"   # empty stub (LIVE: ImGui lives in MQ2Main.dll)
+    "${STUB_LIBS_DIR}/imgui.lib"      # empty stub (EMU: ImGui lives in MQ2Main.dll)
     "${STUB_LIBS_DIR}/pluginapi.lib"  # empty stub (pluginapi.cpp compiled inline)
 
     # Windows system libs (from xwin, paths set by toolchain)

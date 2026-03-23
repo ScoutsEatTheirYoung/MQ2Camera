@@ -1,0 +1,106 @@
+name: Build and Release
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install build tools
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y cmake ninja-build clang lld llvm libspdlog-dev libfmt-dev libglm-dev
+
+      - name: Install xwin
+        run: cargo install xwin
+
+      - name: Cache xwin SDK
+        uses: actions/cache@v4
+        with:
+          path: ~/.xwin-cache
+          key: xwin-x86-${{ hashFiles('.github/workflows/build.yml') }}
+
+      - name: Fetch Windows SDK (x86)
+        run: xwin --accept-license --arch x86 splat --output ~/.xwin-cache/splat
+
+      - name: Clone MacroQuest EMU branch
+        run: |
+          git clone --depth=1 --branch emu \
+            https://github.com/macroquest/macroquest \
+            ../macroquest
+          git -C ../macroquest submodule update --init src/eqlib
+
+      - name: Download DirectX SDK headers
+        run: |
+          mkdir -p build/dxsdk
+          curl -sL -o build/dxsdk/dxsdk.zip \
+            "https://www.nuget.org/api/v2/package/Microsoft.DXSDK.D3DX/9.29.952.8"
+          unzip -q build/dxsdk/dxsdk.zip -d build/dxsdk/pkg
+          mkdir -p build/dxsdk/headers/dxsdk-d3dx
+          cp build/dxsdk/pkg/build/native/include/* build/dxsdk/headers/dxsdk-d3dx/
+
+      - name: Download WIL headers
+        run: |
+          mkdir -p build/wil
+          curl -sL -o build/wil/wil.zip \
+            "https://www.nuget.org/api/v2/package/Microsoft.Windows.ImplementationLibrary"
+          unzip -q build/wil/wil.zip -d build/wil/pkg
+
+      - name: Set up third-party header symlinks
+        run: |
+          mkdir -p build/thirdparty_headers
+          ln -sf /usr/include/spdlog  build/thirdparty_headers/spdlog
+          ln -sf /usr/include/fmt     build/thirdparty_headers/fmt
+          ln -sf /usr/include/glm     build/thirdparty_headers/glm
+          ln -sf $PWD/build/wil/pkg/include/wil build/thirdparty_headers/wil
+
+      - name: Build stub import libraries
+        run: |
+          mkdir -p build/stubs
+          llvm-dlltool -m i386 --input-def MQ2Main.def --output-lib build/stubs/MQ2Main.lib
+          llvm-dlltool -m i386 --input-def eqlib.def   --output-lib build/stubs/eqlib.lib
+          llvm-lib /llvmlibempty /out:build/stubs/detours.lib
+          llvm-lib /llvmlibempty /out:build/stubs/imgui.lib
+          llvm-lib /llvmlibempty /out:build/stubs/imgui-64.lib
+          llvm-lib /llvmlibempty /out:build/stubs/pluginapi.lib
+
+      - name: Apply eqlib header patches
+        run: |
+          mkdir -p build/patches/eqlib/game
+          # CXStr.h: fix std::string_view::compare call
+          cp ../macroquest/src/eqlib/include/eqlib/game/CXStr.h build/patches/eqlib/game/CXStr.h
+          sed -i 's/compare(pos1, count1, 2,/compare(pos1, count1, std::string_view{t},/' \
+            build/patches/eqlib/game/CXStr.h
+          # SoeUtil.h: fix ambiguous atomic conditional
+          cp ../macroquest/src/eqlib/include/eqlib/game/SoeUtil.h build/patches/eqlib/game/SoeUtil.h
+          sed -i 's/m_rep->m_strongRefs : 0/m_rep->m_strongRefs.load() : 0/' \
+            build/patches/eqlib/game/SoeUtil.h
+
+      - name: Configure
+        run: |
+          cmake -B build/cmake -G Ninja \
+            -DCMAKE_TOOLCHAIN_FILE=toolchain-win32-clang.cmake \
+            -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build
+        run: cmake --build build/cmake --target MQ2Camera
+
+      - name: Verify output
+        run: file build/cmake/bin/MQ2Camera.dll
+
+      - name: Create or update rolling release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: latest
+          name: Latest Build
+          prerelease: true
+          body: |
+            Automated build from commit ${{ github.sha }}
+            ${{ github.event.head_commit.message }}
+          files: build/cmake/bin/MQ2Camera.dll
