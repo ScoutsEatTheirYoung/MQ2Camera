@@ -1,0 +1,61 @@
+; Stub import definition for MQ2Main.dll
+; Used by llvm-dlltool to generate MQ2Main.lib for cross-compilation.
+; Only exports actually referenced by MQ2Camera + pluginapi are listed.
+LIBRARY MQ2Main.dll
+EXPORTS
+    ; Logging (MQLIB_API = extern "C")
+    DebugSpew
+    DebugSpewAlways
+    DebugSpewAlwaysFile
+    DebugSpewNoFile
+    WriteChatColor
+    VWriteChatColor
+    WriteChatf
+    WriteChatColorf
+
+    ; Type system (MQLIB_API = extern "C")
+    AddMQ2Type
+    RemoveMQ2Type
+    FindMQ2DataType
+    AddMQ2TypeExtension
+    RemoveMQ2TypeExtension
+    ParseMacroData
+    ParseMacroParameter
+    EvaluateMacroDataMember
+    IsMacroVariable
+    FindMacroVariable
+
+    ; Path globals (MQLIB_VAR = extern "C" DATA)
+    gPathConfig DATA
+    gPathMQRoot DATA
+    gPathMQini DATA
+    gPathMacros DATA
+    gPathLogs DATA
+    gPathPlugins DATA
+
+    ; Built-in type pointer globals (MQLIB_VAR = extern "C" DATA)
+    ; These are in mq::datatypes:: namespace but extern "C" linked
+    pBoolType DATA
+    pIntType DATA
+    pUint64Type DATA
+    pInt64Type DATA
+    pByteType DATA
+    pFloatType DATA
+    pDoubleType DATA
+    pStringType DATA
+    pArrayType DATA
+    pMacroType DATA
+    pMathType DATA
+    pTypeType DATA
+    pTicksType DATA
+    pTimestampType DATA
+    pHeadingType DATA
+
+    ; MQ main interface accessor — exact mangled name from llvm-nm
+    ?GetMainInterface@mq@@YAPEAVMainInterface@1@XZ
+
+    ; MQ2Type lifecycle — exact mangled names from llvm-nm on compiled objects
+    ??0MQ2Type@datatypes@mq@@QEAA@V?$basic_string_view@DU?$char_traits@D@std@@@std@@AEBUMQPluginHandle@2@@Z
+    ??1MQ2Type@datatypes@mq@@UEAA@XZ
+    ?AddMember@MQ2Type@datatypes@mq@@IEAA_NHPEBD@Z
+    ?FindMember@MQ2Type@datatypes@mq@@QEAAPEAUMQTypeMember@3@PEBD@Z

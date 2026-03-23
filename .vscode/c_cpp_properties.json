@@ -1,0 +1,53 @@
+{
+    "configurations": [
+        {
+            "name": "MQ2Camera (Win32 cross-compile)",
+            "compilerPath": "/usr/bin/clang-cl",
+            "compilerArgs": [
+                "--target=i686-pc-windows-msvc"
+            ],
+            "intelliSenseMode": "windows-clang-x86",
+            "cppStandard": "c++17",
+            "defines": [
+                "WIN32",
+                "_WIN32",
+                "_WINDOWS",
+                "UNICODE",
+                "_UNICODE",
+                "NOMINMAX",
+                "WIN32_LEAN_AND_MEAN",
+                "_WIN32_WINNT=0x0601",
+                "WINVER=0x0601",
+                "FMT_HEADER_ONLY=1",
+                "SPDLOG_HEADER_ONLY=1",
+                "SPDLOG_FMT_EXTERNAL=1",
+                "MQ2PLUGIN"
+            ],
+            "includePath": [
+                "${HOME}/.xwin-cache/splat/crt/include",
+                "${HOME}/.xwin-cache/splat/sdk/include/10.0.26100/ucrt",
+                "${HOME}/.xwin-cache/splat/sdk/include/10.0.26100/um",
+                "${HOME}/.xwin-cache/splat/sdk/include/10.0.26100/shared",
+                "${workspaceFolder}/../macroquest/include",
+                "${workspaceFolder}/../macroquest/src/main",
+                "${workspaceFolder}/../macroquest/src/eqlib/include",
+                "${workspaceFolder}/../macroquest/src/eqlib/include/eqlib",
+                "${workspaceFolder}/../macroquest/src/common",
+                "${workspaceFolder}/../macroquest/contrib",
+                "${workspaceFolder}/../macroquest/src",
+                "/usr/include"
+            ],
+            "browse": {
+                "path": [
+                    "${workspaceFolder}",
+                    "${workspaceFolder}/../macroquest/include",
+                    "${workspaceFolder}/../macroquest/src/main",
+                    "${workspaceFolder}/../macroquest/src/eqlib/include"
+                ],
+                "limitSymbolsToIncludedHeaders": true
+            },
+            "forcedInclude": []
+        }
+    ],
+    "version": 4
+}

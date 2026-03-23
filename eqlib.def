@@ -1,0 +1,13 @@
+; Stub import definition for eqlib.dll
+; Used by llvm-dlltool to generate eqlib.lib for cross-compilation.
+LIBRARY eqlib.dll
+EXPORTS
+    ; Global game object pointers (EQLIB_VAR = extern "C" DATA)
+    pDisplay DATA
+    pLocalPC DATA
+    pLocalPlayer DATA
+    pCharSpawn DATA
+
+    ; CXStr — exact mangled names from llvm-nm on compiled objects
+    ??0CXStr@eqlib@@QEAA@AEBV01@@Z
+    ?FreeRep@CXStr@eqlib@@AEAAXPEAUCStrRep@2@@Z

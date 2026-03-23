@@ -1,0 +1,20 @@
+# Drop this file (renamed to CMakeLists.txt) into:
+#   macroquest/plugins/MQ2Camera/CMakeLists.txt
+#
+# Then configure with VS2022 / Win32 as normal for MQ RoF2 EMU builds.
+
+include("../../Plugin.cmake")
+
+set(MQ2Camera_SOURCES
+    "MQ2Camera.cpp"
+)
+
+source_groups("Source Files" ${MQ2Camera_SOURCES})
+
+add_library(MQ2Camera SHARED
+    ${MQ2Camera_SOURCES}
+)
+
+set_target_properties(MQ2Camera PROPERTIES FOLDER "CustomPlugins")
+
+target_Plugin_props(MQ2Camera)

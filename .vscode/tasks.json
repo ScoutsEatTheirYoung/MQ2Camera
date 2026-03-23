@@ -1,0 +1,72 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Build MQ2Camera.dll",
+            "type": "shell",
+            "command": "${workspaceFolder}/build.sh",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "clear": false
+            },
+            "problemMatcher": {
+                "owner": "clang",
+                "fileLocation": ["absolute"],
+                "pattern": {
+                    "regexp": "^(.*):(\\d+):(\\d+):\\s+(error|warning|note):\\s+(.*)$",
+                    "file": 1,
+                    "line": 2,
+                    "column": 3,
+                    "severity": 4,
+                    "message": 5
+                }
+            }
+        },
+        {
+            "label": "CMake: Configure only",
+            "type": "shell",
+            "command": "cmake",
+            "args": [
+                "-S", "${workspaceFolder}",
+                "-B", "${workspaceFolder}/build/cmake",
+                "-G", "Ninja",
+                "-DCMAKE_TOOLCHAIN_FILE=${workspaceFolder}/toolchain-win32-clang.cmake",
+                "-DCMAKE_BUILD_TYPE=RelWithDebInfo",
+                "-DMQ_ROOT=${workspaceFolder}/../macroquest",
+                "-DSTUB_LIBS_DIR=${workspaceFolder}/build/stubs"
+            ],
+            "group": "build",
+            "presentation": { "reveal": "always" }
+        },
+        {
+            "label": "CMake: Build only (after configure)",
+            "type": "shell",
+            "command": "cmake",
+            "args": [
+                "--build", "${workspaceFolder}/build/cmake",
+                "--target", "MQ2Camera"
+            ],
+            "group": "build",
+            "dependsOn": "CMake: Configure only",
+            "presentation": { "reveal": "always" }
+        },
+        {
+            "label": "Install to macroquest plugins dir",
+            "type": "shell",
+            "command": "cp",
+            "args": [
+                "${workspaceFolder}/build/cmake/bin/MQ2Camera.dll",
+                "${workspaceFolder}/../macroquest/plugins/MQ2Camera/MQ2Camera.dll"
+            ],
+            "group": "none",
+            "presentation": { "reveal": "always" }
+        }
+    ]
+}

@@ -1,0 +1,21 @@
+# Build output
+build/
+
+# xwin Windows SDK cache (gigabytes — re-run xwin to regenerate)
+.xwin-cache/
+
+# VSCode state (keep config files, ignore local state)
+.vscode/.browse.VC.db*
+.vscode/ipch/
+.vscode/*.VC.db
+
+# CMake user presets
+CMakeUserPresets.json
+
+# Compiled output that might end up in root
+*.dll
+*.lib
+*.exp
+*.pdb
+*.ilk
+*.obj
