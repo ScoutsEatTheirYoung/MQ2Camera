@@ -5,11 +5,12 @@ set(CMAKE_SYSTEM_NAME Windows)
 set(CMAKE_SYSTEM_PROCESSOR X86)
 
 # ── Compilers ────────────────────────────────────────────────────────────────
-set(CMAKE_C_COMPILER   clang-cl)
-set(CMAKE_CXX_COMPILER clang-cl)
-set(CMAKE_LINKER       lld-link)
-set(CMAKE_AR           llvm-lib)
-set(CMAKE_RANLIB       true)
+# Try unversioned names first (Arch/local), fall back to versioned (Ubuntu CI)
+find_program(CMAKE_C_COMPILER   NAMES clang-cl   clang-cl-19   REQUIRED)
+find_program(CMAKE_CXX_COMPILER NAMES clang-cl   clang-cl-19   REQUIRED)
+find_program(CMAKE_LINKER       NAMES lld-link   lld-link-19   REQUIRED)
+find_program(CMAKE_AR           NAMES llvm-lib   llvm-lib-19   llvm-ar llvm-ar-19 REQUIRED)
+set(CMAKE_RANLIB true)
 
 # ── Target triple ─────────────────────────────────────────────────────────────
 # RoF2 EMU client is 32-bit. LIVE branch would use x86_64-pc-windows-msvc + /machine:x64.
