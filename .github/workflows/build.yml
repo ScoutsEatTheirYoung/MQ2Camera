@@ -79,6 +79,8 @@ jobs:
             https://github.com/macroquest/macroquest \
             ../macroquest
           git -C ../macroquest submodule update --init src/eqlib
+          # contrib/Blech is included as <blech/Blech.h>; case-sensitive Linux needs a symlink
+          ln -sf Blech ../macroquest/contrib/blech
 
       - name: Download DirectX SDK headers
         run: |
