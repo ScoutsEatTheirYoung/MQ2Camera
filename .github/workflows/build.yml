@@ -38,7 +38,14 @@ jobs:
         if: steps.cache-xwin.outputs.cache-hit != 'true'
         run: |
           cargo install xwin
-          xwin --accept-license --arch x86 --http-retry 5 splat --output ~/.xwin-cache/splat
+          # xwin is idempotent — rerunning skips already-downloaded files.
+          # Retry the whole command up to 5 times to ride out CDN flakiness.
+          for attempt in $(seq 1 5); do
+            echo "xwin attempt $attempt..."
+            xwin --accept-license --arch x86 --http-retry 5 splat \
+              --output ~/.xwin-cache/splat && break
+            [ $attempt -lt 5 ] && sleep 20
+          done
 
       - name: Clone MacroQuest EMU branch
         run: |
