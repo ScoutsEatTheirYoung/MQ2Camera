@@ -5,13 +5,30 @@ set(CMAKE_SYSTEM_NAME Windows)
 set(CMAKE_SYSTEM_PROCESSOR X86)
 
 # ── Compilers ────────────────────────────────────────────────────────────────
-# Must search host PATH, not the cross-compilation sysroot.
-set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
-# Try unversioned names first (Arch/local), fall back to versioned (Ubuntu CI)
-find_program(CMAKE_C_COMPILER   NAMES clang-cl   clang-cl-19   REQUIRED)
-find_program(CMAKE_CXX_COMPILER NAMES clang-cl   clang-cl-19   REQUIRED)
-find_program(CMAKE_LINKER       NAMES lld-link   lld-link-19   REQUIRED)
-find_program(CMAKE_AR           NAMES llvm-lib   llvm-lib-19   llvm-ar llvm-ar-19 REQUIRED)
+# find_program respects cross-compilation root path restrictions even when
+# FIND_ROOT_PATH_MODE_PROGRAM is set in the same file, so use execute_process
+# (which always runs in the host shell) to locate binaries via PATH.
+execute_process(
+    COMMAND sh -c "which clang-cl 2>/dev/null || which clang-cl-19 2>/dev/null"
+    OUTPUT_VARIABLE _CLANG_CL OUTPUT_STRIP_TRAILING_WHITESPACE)
+execute_process(
+    COMMAND sh -c "which lld-link 2>/dev/null || which lld-link-19 2>/dev/null"
+    OUTPUT_VARIABLE _LLD_LINK OUTPUT_STRIP_TRAILING_WHITESPACE)
+execute_process(
+    COMMAND sh -c "which llvm-lib 2>/dev/null || which llvm-lib-19 2>/dev/null || which llvm-ar 2>/dev/null || which llvm-ar-19 2>/dev/null"
+    OUTPUT_VARIABLE _LLVM_AR OUTPUT_STRIP_TRAILING_WHITESPACE)
+
+if(NOT _CLANG_CL)
+    message(FATAL_ERROR "clang-cl not found in PATH. Install clang (Arch) or clang-19 (Ubuntu).")
+endif()
+if(NOT _LLD_LINK)
+    message(FATAL_ERROR "lld-link not found in PATH. Install lld (Arch) or lld-19 (Ubuntu).")
+endif()
+
+set(CMAKE_C_COMPILER   "${_CLANG_CL}")
+set(CMAKE_CXX_COMPILER "${_CLANG_CL}")
+set(CMAKE_LINKER       "${_LLD_LINK}")
+set(CMAKE_AR           "${_LLVM_AR}")
 set(CMAKE_RANLIB true)
 
 # ── Target triple ─────────────────────────────────────────────────────────────
