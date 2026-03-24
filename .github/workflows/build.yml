@@ -15,19 +15,30 @@ jobs:
       - name: Install build tools
         run: |
           sudo apt-get update -qq
-          sudo apt-get install -y cmake ninja-build clang lld llvm libspdlog-dev libfmt-dev libglm-dev
+          sudo apt-get install -y cmake ninja-build clang lld llvm \
+            libspdlog-dev libfmt-dev libglm-dev
+          # Ensure unversioned symlinks exist (ubuntu-latest uses LLVM 14)
+          for tool in llvm-dlltool llvm-ar llvm-nm llvm-lib; do
+            if ! command -v $tool &>/dev/null; then
+              ver=$(ls /usr/bin/${tool}-* 2>/dev/null | head -1 | grep -oP '\d+$')
+              sudo ln -sf /usr/bin/${tool}-${ver} /usr/local/bin/${tool}
+            fi
+          done
 
-      - name: Install xwin
-        run: cargo install xwin
-
-      - name: Cache xwin SDK
+      - name: Cache xwin SDK and binary
+        id: cache-xwin
         uses: actions/cache@v4
         with:
-          path: ~/.xwin-cache
-          key: xwin-x86-${{ hashFiles('.github/workflows/build.yml') }}
+          path: |
+            ~/.xwin-cache
+            ~/.cargo/bin/xwin
+          key: xwin-x86-v2
 
-      - name: Fetch Windows SDK (x86)
-        run: xwin --accept-license --arch x86 splat --output ~/.xwin-cache/splat
+      - name: Install xwin and fetch Windows SDK
+        if: steps.cache-xwin.outputs.cache-hit != 'true'
+        run: |
+          cargo install xwin
+          xwin --accept-license --arch x86 splat --output ~/.xwin-cache/splat
 
       - name: Clone MacroQuest EMU branch
         run: |
@@ -65,19 +76,17 @@ jobs:
           mkdir -p build/stubs
           llvm-dlltool -m i386 --input-def MQ2Main.def --output-lib build/stubs/MQ2Main.lib
           llvm-dlltool -m i386 --input-def eqlib.def   --output-lib build/stubs/eqlib.lib
-          llvm-lib /llvmlibempty /out:build/stubs/detours.lib
-          llvm-lib /llvmlibempty /out:build/stubs/imgui.lib
-          llvm-lib /llvmlibempty /out:build/stubs/imgui-64.lib
-          llvm-lib /llvmlibempty /out:build/stubs/pluginapi.lib
+          # Empty stubs for libs referenced by #pragma comment in MQ headers
+          for lib in detours imgui imgui-64 pluginapi; do
+            llvm-ar rcs build/stubs/${lib}.lib
+          done
 
       - name: Apply eqlib header patches
         run: |
           mkdir -p build/patches/eqlib/game
-          # CXStr.h: fix std::string_view::compare call
           cp ../macroquest/src/eqlib/include/eqlib/game/CXStr.h build/patches/eqlib/game/CXStr.h
           sed -i 's/compare(pos1, count1, 2,/compare(pos1, count1, std::string_view{t},/' \
             build/patches/eqlib/game/CXStr.h
-          # SoeUtil.h: fix ambiguous atomic conditional
           cp ../macroquest/src/eqlib/include/eqlib/game/SoeUtil.h build/patches/eqlib/game/SoeUtil.h
           sed -i 's/m_rep->m_strongRefs : 0/m_rep->m_strongRefs.load() : 0/' \
             build/patches/eqlib/game/SoeUtil.h
