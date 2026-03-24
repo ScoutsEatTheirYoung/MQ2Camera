@@ -26,27 +26,46 @@ jobs:
             sudo ln -sf /usr/bin/${tool}-19 /usr/local/bin/${tool}
           done
 
-      - name: Cache xwin SDK and binary
+      - name: Restore xwin cache
         id: cache-xwin
-        uses: actions/cache@v4
+        uses: actions/cache/restore@v4
         with:
           path: |
             ~/.xwin-cache
             ~/.cargo/bin/xwin
-          key: xwin-x86-v3
+          key: xwin-x86-v4
+          restore-keys: xwin-x86-
 
-      - name: Install xwin and fetch Windows SDK
-        if: steps.cache-xwin.outputs.cache-hit != 'true'
+      - name: Install xwin
+        if: hashFiles('~/.cargo/bin/xwin') == ''
+        run: cargo install xwin
+
+      - name: Fetch Windows SDK
+        id: xwin-fetch
         run: |
-          cargo install xwin
-          # xwin is idempotent — rerunning skips already-downloaded files.
-          # Retry the whole command up to 5 times to ride out CDN flakiness.
-          for attempt in $(seq 1 5); do
+          # Check if splat is already complete
+          if [ -d ~/.xwin-cache/splat/crt ] && [ -d ~/.xwin-cache/splat/sdk ]; then
+            echo "xwin splat already complete, skipping download"
+            exit 0
+          fi
+          # xwin is idempotent — skips .cab files already in ~/.xwin-cache.
+          # Partial downloads are saved to cache below so subsequent runs resume.
+          for attempt in $(seq 1 10); do
             echo "xwin attempt $attempt..."
-            xwin --accept-license --arch x86 --http-retry 5 splat \
-              --output ~/.xwin-cache/splat && break
-            [ $attempt -lt 5 ] && sleep 20
+            xwin --accept-license --arch x86 --http-retry 10 splat \
+              --output ~/.xwin-cache/splat && exit 0
+            [ $attempt -lt 10 ] && sleep 60
           done
+          exit 1
+
+      - name: Save xwin cache
+        if: always() && steps.cache-xwin.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            ~/.xwin-cache
+            ~/.cargo/bin/xwin
+          key: xwin-x86-${{ github.run_id }}
 
       - name: Clone MacroQuest EMU branch
         run: |
